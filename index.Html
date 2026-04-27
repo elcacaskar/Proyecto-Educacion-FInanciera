@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MaxiPollas — Mini curso de aprendizaje de educacion financiera</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0a;
+      --surface:   #161612;
+      --surface2:  #1e1e18;
+      --border:    #2c2c22;
+      --border2:   #3a3a2e;
+      --gold:      #c8a850;
+      --gold-light:#e2c07a;
+      --gold-dim:  #7a6630;
+      --cream:     #f0e8d0;
+      --muted:     #7a7468;
+      --muted2:    #4a4840;
+      --success:   #4a7c5a;
+      --success-bg:#0f2018;
+      --success-border:#2a5038;
+      --error:     #8b4049;
+      --error-bg:  #1a0a0c;
+      --error-border:#5a2830;
+      --radius:    4px;
+      --radius-lg: 8px;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.6;
+    }
+
+    /* ─── APP SHELL ─── */
+    #app {
+      max-width: 680px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    /* ─── SCREENS ─── */
+    .screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      padding: 40px 0 60px;
+      min-height: 100vh;
+    }
+    .screen.active {
+      display: block;
+    }
+    .screen.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── SPLASH ─── */
+    #splash {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 60px 0;
+    }
+
+    .splash-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s forwards;
+    }
+
+    .splash-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(52px, 10vw, 88px);
+      font-style: italic;
+      line-height: 0.92;
+      color: var(--cream);
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.35s forwards;
+    }
+
+    .splash-title em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .splash-rule {
+      width: 60px;
+      height: 1px;
+      background: var(--gold);
+      margin: 28px 0;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.5s forwards;
+    }
+
+    .splash-desc {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--muted);
+      max-width: 440px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.65s forwards;
+    }
+
+    .splash-meta {
+      margin-top: 48px;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.8s forwards;
+    }
+
+    .splash-stat {
+      text-align: left;
+    }
+
+    .splash-stat-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--cream);
+      line-height: 1;
+    }
+
+    .splash-stat-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .splash-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--border2);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 52px;
+      padding: 16px 36px;
+      background: var(--gold);
+      color: #0d0d0a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.95s forwards;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary svg {
+      transition: transform 0.2s;
+    }
+    .btn-primary:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg);
+      padding: 16px 0 0;
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .progress-score {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── HUB ─── */
+    .hub-header {
+      margin: 36px 0 32px;
+    }
+
+    .section-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 36px;
+      font-style: italic;
+      line-height: 1.1;
+      color: var(--cream);
+    }
+
+    .module-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .module-card:hover:not(.locked) {
+      border-color: var(--border2);
+      background: var(--surface2);
+      transform: translateX(3px);
+    }
+
+    .module-card:hover:not(.locked) .module-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .module-card.completed {
+      border-color: var(--gold-dim);
+    }
+
+    .module-card.locked {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .module-card.active-module {
+      border-color: var(--gold);
+    }
+
+    .module-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 32px;
+      color: var(--border2);
+      line-height: 1;
+      min-width: 36px;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .module-card.completed .module-num,
+    .module-card.active-module .module-num {
+      color: var(--gold-dim);
+    }
+
+    .module-info {
+      flex: 1;
+    }
+
+    .module-tag-pill {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      padding: 2px 7px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .module-card.completed .module-tag-pill {
+      color: var(--gold-dim);
+      border-color: var(--gold-dim);
+    }
+
+    .module-title {
+      font-family: 'Lora', serif;
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--cream);
+      line-height: 1.3;
+    }
+
+    .module-subtitle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .module-status {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border2);
+    }
+
+    .status-dot.done {
+      background: var(--gold);
+    }
+
+    .module-arrow {
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.2s, transform 0.2s;
+      color: var(--gold);
+    }
+
+    /* ─── LESSON ─── */
+    .lesson-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0 32px;
+    }
+
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      padding: 7px 14px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-back:hover {
+      border-color: var(--border2);
+      color: var(--cream);
+    }
+
+    .lesson-breadcrumb {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .lesson-header {
+      margin-bottom: 28px;
+    }
+
+    .lesson-module-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+
+    .lesson-module-tag::before {
+      content: '';
+      display: block;
+      width: 16px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .lesson-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(30px, 6vw, 44px);
+      font-style: italic;
+      line-height: 1.05;
+      color: var(--cream);
+    }
+
+    .lesson-subtitle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .concept-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+
+    .block-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 12px;
+    }
+
+    .concept-text {
+      font-size: 15.5px;
+      line-height: 1.72;
+      color: var(--cream);
+    }
+
+    .example-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 28px;
+    }
+
+    .example-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .example-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .example-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      color: var(--gold-light);
+      margin-bottom: 10px;
+    }
+
+    .example-text {
+      font-size: 14.5px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .lesson-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .lesson-cta-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .btn-proceed {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--gold);
+      color: #0d0d0a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-proceed:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    /* ─── QUIZ ─── */
+    .quiz-header {
+      margin: 28px 0 28px;
+    }
+
+    .quiz-step {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .quiz-question {
+      font-family: 'Lora', serif;
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--cream);
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 28px 0;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      text-align: left;
+      width: 100%;
+    }
+
+    .option-btn:hover:not(.disabled) {
+      border-color: var(--border2);
+      background: var(--surface2);
+      transform: translateX(3px);
+    }
+
+    .option-btn.selected-correct {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .option-btn.selected-wrong {
+      border-color: var(--error);
+      background: var(--error-bg);
+    }
+
+    .option-btn.reveal-correct {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .option-btn.disabled {
+      cursor: default;
+      opacity: 0.5;
+    }
+
+    .option-btn.disabled:not(.selected-correct):not(.selected-wrong):not(.reveal-correct) {
+      opacity: 0.3;
+    }
+
+    .option-letter {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted2);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .option-btn.selected-correct .option-letter {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .option-btn.selected-wrong .option-letter {
+      background: var(--error);
+      color: white;
+      border-color: var(--error);
+    }
+
+    .option-btn.reveal-correct .option-letter {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .option-text {
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--cream);
+      padding-top: 2px;
+    }
+
+    /* ─── FEEDBACK ─── */
+    .feedback-header {
+      margin: 36px 0 28px;
+    }
+
+    .feedback-result {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 24px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+    }
+
+    .feedback-result.correct {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+    }
+
+    .feedback-result.wrong {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+    }
+
+    .feedback-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feedback-result.correct .feedback-icon {
+      background: var(--success);
+    }
+
+    .feedback-result.wrong .feedback-icon {
+      background: var(--error);
+    }
+
+    .feedback-result-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .feedback-result.correct .feedback-result-label {
+      color: #6dba8a;
+    }
+
+    .feedback-result.wrong .feedback-result-label {
+      color: #c47080;
+    }
+
+    .feedback-result-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--cream);
+      margin-top: 2px;
+    }
+
+    .explanation-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+
+    .explanation-text {
+      font-size: 15px;
+      line-height: 1.72;
+      color: var(--cream);
+    }
+
+    .selected-answer-recap {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+    }
+
+    .recap-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .recap-answer {
+      font-size: 14px;
+      color: var(--cream);
+    }
+
+    .feedback-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-next {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 24px;
+      background: var(--gold);
+      color: #0d0d0a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-next:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-review {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 20px;
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-review:hover {
+      border-color: var(--gold-dim);
+      color: var(--cream);
+    }
+
+    /* ─── COMPLETE ─── */
+  #complete {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 60px 0;
+  }
+
+  .complete-emblem {
+      width: 72px;
+      height: 72px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .complete-emblem::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid var(--gold-dim);
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    .complete-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 7vw, 56px);
+      font-style: italic;
+      line-height: 1.05;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+
+    .complete-title em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    .complete-sub {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 420px;
+      margin-bottom: 40px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-bottom: 36px;
+    }
+
+    .score-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 20px;
+    }
+
+    .score-cell:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .score-cell:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+
+    .score-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 30px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .score-lbl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .complete-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-restart {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: none;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-restart:hover {
+      background: var(--gold);
+      color: #0d0d0a;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(200, 168, 80, 0.3); }
+      70% { box-shadow: 0 0 0 10px rgba(200, 168, 80, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(200, 168, 80, 0); }
+    }
+
+    .pulse { animation: pulse-ring 2s infinite; }
+
+    /* ─── MOBILE ─── */
+    @media (max-width: 480px) {
+      #app { padding: 0 16px; }
+      .splash-meta { gap: 20px; }
+      .score-grid { grid-template-columns: 1fr; gap: 2px; }
+      .score-cell:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+      .score-cell:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+      .feedback-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ───────── SPLASH ───────── -->
+  <div id="splash" class="screen active">
+    <p class="splash-tag">Mini curso de aprendizaje</p>
+    <h1 class="splash-title">Maxi<br><em>Pollas</em></h1>
+    <div class="splash-rule"></div>
+    <p class="splash-desc">Cinco conceptos financieros esenciales. Lecciones cortas, ejemplos reales, comentarios al respecto. Domina los fundamentos — no requiere conocimiento previo.</p>
+    <div class="splash-meta">
+      <div class="splash-stat">
+        <div class="splash-stat-num">4</div>
+        <div class="splash-stat-label">Módulos</div>
+      </div>
+      <div class="splash-divider"></div>
+      <div class="splash-stat">
+        <div class="splash-stat-num">~10</div>
+        <div class="splash-stat-label">Minutos</div>
+      </div>
+      <div class="splash-divider"></div>
+      <div class="splash-stat">
+        <div class="splash-stat-num">Gratis</div>
+        <div class="splash-stat-label">Siempre</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="showHub()">
+      Empezar leccion
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ───────── HUB ───────── -->
+  <div id="hub" class="screen">
+    <div class="progress-header">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span class="progress-label" id="progress-label">0 de 4 hecho</span>
+        <span class="progress-score" id="progress-score">Puntuación: 0 / 4</span>
+      </div>
+    </div>
+
+    <div class="hub-header">
+      <p class="section-tag">Índice de módulos</p>
+      <h2 class="section-title">Elige tu lección</h2>
+    </div>
+
+    <div class="module-grid" id="module-grid"></div>
+  </div>
+
+  <!-- ───────── LESSON ───────── -->
+  <div id="lesson" class="screen">
+    <div class="progress-header">
+      <div class="progress-track">
+        <div class="progress-fill" id="lesson-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span class="progress-label" id="lesson-progress-label"></span>
+        <span class="progress-score" id="lesson-progress-score"></span>
+      </div>
+    </div>
+
+    <div class="lesson-nav">
+      <button class="btn-back" onclick="showHub()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M8 6H2M5 3L2 6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <span class="lesson-breadcrumb" id="lesson-breadcrumb"></span>
+    </div>
+
+    <div class="lesson-header">
+      <div class="lesson-module-tag" id="lesson-tag"></div>
+      <h2 class="lesson-title" id="lesson-title"></h2>
+      <p class="lesson-subtitle" id="lesson-subtitle"></p>
+    </div>
+
+    <div class="concept-block">
+      <div class="block-label">Concepto</div>
+      <p class="concept-text" id="lesson-concept"></p>
+    </div>
+
+    <div class="example-block">
+      <div class="example-title">Ejemplo de la vida real</div>
+      <div class="example-headline" id="lesson-example-title"></div>
+      <p class="example-text" id="lesson-example-body"></p>
+    </div>
+
+    <div class="lesson-cta">
+      <span class="lesson-cta-text">Listo para ponerte a prueba?</span>
+      <button class="btn-proceed" onclick="showQuiz()">
+        Iniciar la prueba
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M3 6h6M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ───────── QUIZ ───────── -->
+  <div id="quiz" class="screen">
+    <div class="progress-header">
+      <div class="progress-track">
+        <div class="progress-fill" id="quiz-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span class="progress-label" id="quiz-progress-label"></span>
+        <span class="progress-score" id="quiz-progress-score"></span>
+      </div>
+    </div>
+
+    <div class="quiz-header">
+      <p class="quiz-step" id="quiz-step"></p>
+      <p class="quiz-question" id="quiz-question"></p>
+    </div>
+
+    <div class="quiz-options" id="quiz-options"></div>
+  </div>
+
+  <!-- ───────── FEEDBACK ───────── -->
+  <div id="feedback" class="screen">
+    <div class="progress-header">
+      <div class="progress-track">
+        <div class="progress-fill" id="feedback-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span class="progress-label" id="feedback-progress-label"></span>
+        <span class="progress-score" id="feedback-progress-score"></span>
+      </div>
+    </div>
+
+    <div class="feedback-header">
+      <div class="feedback-result" id="feedback-result">
+        <div class="feedback-icon" id="feedback-icon"></div>
+        <div>
+          <div class="feedback-result-label" id="feedback-result-label"></div>
+          <div class="feedback-result-title" id="feedback-result-title"></div>
+        </div>
+      </div>
+
+      <div class="selected-answer-recap">
+        <div class="recap-label">Tu respuesta</div>
+        <div class="recap-answer" id="recap-answer"></div>
+      </div>
+
+      <div class="explanation-block">
+        <div class="block-label">Explicación</div>
+        <p class="explanation-text" id="explanation-text"></p>
+      </div>
+
+      <div class="feedback-actions">
+        <button class="btn-review" onclick="showLesson(state.currentModule)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 2v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10.5 6A4.5 4.5 0 1 1 6 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Revisión
+        </button>
+        <button class="btn-next" id="btn-next" onclick="nextModule()">
+          Siguiente módulo
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M3 6h6M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── COMPLETE ───────── -->
+  <div id="complete" class="screen">
+    <div class="complete-emblem">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M14 4l2.4 7.2H24l-6.2 4.6 2.4 7.2L14 18.6l-6.2 4.4 2.4-7.2L4 11.2h7.6L14 4z" fill="var(--gold)" opacity="0.9"/>
+      </svg>
+    </div>
+
+    <h2 class="complete-title">Curso<br><em>Completado.</em></h2>
+    <p class="complete-sub" id="complete-sub"></p>
+
+    <div class="score-grid">
+      <div class="score-cell">
+        <div class="score-num" id="final-score">0</div>
+        <div class="score-lbl">Correcto</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-num" id="final-pct">0%</div>
+        <div class="score-lbl">Precisión</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-num" id="final-grade">—</div>
+        <div class="score-lbl">Calificación</div>
+      </div>
+    </div>
+
+    <div class="complete-actions">
+      <div class="review-system" style="margin-bottom: 30px; text-align: center; background: var(--surface); padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+  <p class="score-lbl" style="margin-bottom: 12px;">¿Qué te pareció el curso?</p>
+  <div id="star-rating" style="display: flex; justify-content: center; gap: 8px; font-size: 24px; cursor: pointer;">
+    <span onclick="setRating(1)">☆</span>
+    <span onclick="setRating(2)">☆</span>
+    <span onclick="setRating(3)">☆</span>
+    <span onclick="setRating(4)">☆</span>
+    <span onclick="setRating(5)">☆</span>
+  </div>
+  <p id="review-thanks" style="font-size: 12px; color: var(--gold); margin-top: 10px; display: none;">¡Gracias por tu valoración!</p>
+  </div>
+      <button class="btn-restart" onclick="restart()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M10 6A4 4 0 1 1 8.5 2.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M10 1v3H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Reanudar Curso
+      </button>
+      <button class="btn-primary" style="margin-top:0;opacity:1;animation:none" onclick="showHub()">
+        Mapa de módulos
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MODULES = [
+  {
+  id: 0,
+  title: "Ahorro",
+  subtitle: "La mayoría cree que ahorrar es guardar lo que sobra. Por eso, la mayoría nunca ahorra.",
+  tag: "Base",
+  concept: "Ahorrar no es una consecuencia, es una decisión previa. Si gastás primero, tu cerebro se adapta a gastar todo lo disponible. Siempre. La gente que logra ahorrar consistentemente hace lo contrario: se paga primero, separando una parte apenas recibe dinero. Además, hay un problema que casi nadie considera: si solo 'guardás' el dinero sin protegerlo, la inflación lo va erosionando. Es decir, podés estar 'ahorrando' y aún así volverte más pobre. Entonces, ahorrar bien implica 3 cosas: Prioridad (antes de gastar), Protección (evitar que pierda valor) y Consistencia (hacerlo todos los meses).",
+  
+  example: {
+    title: "Mismo ingreso, resultado opuesto",
+    body: "Dos personas ganan lo mismo. Persona A: gasta primero y ahorra lo que sobra → nunca sobra. Persona B: separa 20% apenas cobra → se adapta. Después de 1 año, uno sigue igual, el otro acumuló capital."
+  },
+
+  question: "¿Cuál de estas opciones describe mejor un ahorro efectivo?",
+
+  options: [
+    { 
+      label: "Guardar el dinero que sobra al final del mes.", 
+      explanation: "Este es el error más común. Si dependés de lo que sobra, no tenés control real." 
+    },
+    { 
+      label: "Separar una parte del ingreso apenas cobrás.", 
+      explanation: "Es mejor, pero incompleto. Si no protegés ese dinero, la inflación lo reduce." 
+    },
+    { 
+      label: "Separar una parte del ingreso al inicio y protegerla de la inflación.", 
+      explanation: "Correcto. Esto combina prioridad, sistema y protección.", 
+      correct: true 
+    },
+    { 
+      label: "Reducir gastos cuando te das cuenta que estás corto.", 
+      explanation: "Esto es reacción, no estrategia. Siempre llegás tarde." 
+    }
+  ],
+
+  explanation: "Ahorrar bien no es cuestión de fuerza de voluntad, es cuestión de sistema. Si no separás primero, no ahorrás. Y si no protegés ese dinero, perdés poder de compra. En Argentina, donde la inflación es alta, esto no es opcional: es la diferencia entre avanzar o quedarse atrás. Priorizar, proteger y repetir todos los meses es lo que realmente construye progreso financiero."
+  },
+  {
+  id: 1,
+  title: "Interés compuesto",
+  subtitle: "El efecto bola de nieve",
+  tag: "Crecimiento",
+  concept: "El dinero crece no solo sobre lo que invertís, sino también sobre las ganancias acumuladas. En Argentina, esto es clave porque dejar el dinero quieto en pesos lo hace perder valor. Invertir y reinvertir permite que tu capital crezca con el tiempo. Cuanto antes empieces, más fuerte es el efecto. El tiempo sigue siendo la variable más importante, incluso en contextos inflacionarios.",
+  example: {
+    title: "Dejarlo crecer (en serio)",
+    body: "Invertís $500.000 con un rendimiento del 10% anual. Año 1: $550.000. Año 2: $605.000. Año 10: más de $1.290.000. Si solo sumaras interés simple, tendrías mucho menos. La diferencia es que cada año ganás sobre una base mayor."
+  },
+  question: "¿Por qué el interés compuesto genera más crecimiento que el interés simple?",
+
+  options: [
+  { 
+    label: "Porque usa una tasa de interés más alta.", 
+    explanation: "Incorrecto. La tasa puede ser la misma. La diferencia no está en cuánto, sino en cómo crece." 
+  },
+  { 
+    label: "Porque se suma el interés dos veces.", 
+    explanation: "Incorrecto. No es que se sume dos veces, sino que cambia la base sobre la que se calcula." 
+  },
+  { 
+    label: "Porque los intereses generados también producen nuevos intereses.", 
+    explanation: "Correcto. Cada año ganás sobre una base mayor. Eso es lo que hace que el crecimiento se acelere con el tiempo.", 
+    correct: true 
+  },
+  { 
+    label: "Porque el cálculo es más rápido.", 
+    explanation: "Incorrecto. La velocidad del cálculo no tiene nada que ver con el resultado." 
+  }
+  ],
+  explanation: "La clave del interés compuesto es que cada ganancia se reinvierte y empieza a generar nuevas ganancias. No es solo crecer, es crecer sobre lo ya crecido. En el tiempo, esta diferencia se vuelve enorme. En Argentina, esto solo sirve si además superás la inflación."  },
+  {
+  id: 2,
+  title: "Fondo de emergencia",
+  subtitle: "Tu respaldo cuando todo se complica",
+  tag: "Protección",
+  concept: "Un fondo de emergencia equivale a entre 3 y 6 meses de gastos básicos. En Argentina, no se guarda todo en pesos quietos porque pierden valor rápido. Debe estar en algo accesible y relativamente estable: efectivo, cuenta bancaria o instrumentos de bajo riesgo. Su función no es ganar dinero, sino darte margen ante imprevistos sin endeudarte.",
+  example: {
+    title: "Evitar una deuda cara",
+    body: "Tenés gastos mensuales de $400.000. Ahorrás $1.600.000 (4 meses). Se rompe algo importante y necesitás $300.000. Usás tu fondo y evitás financiarlo con tarjeta o crédito, que en Argentina puede tener tasas altísimas."
+  },
+  question: "¿Dónde deberías guardar tu fondo de emergencia en Argentina?",
+  options: [
+    { label: "Acciones o crypto", explanation: "Son volátiles. Podés perder justo cuando necesitás el dinero." },
+    { label: "Todo en efectivo en casa", explanation: "Es accesible, pero pierde valor con la inflación y tiene riesgo físico." },
+    { label: "Cuenta bancaria o billetera virtual accesible", explanation: "Permite acceso rápido y seguridad. Puede combinarse con instrumentos simples como fondos money market.", correct: true },
+    { label: "Invertirlo a largo plazo (bonos o CEDEARs)", explanation: "No es líquido. Puede bajar de valor cuando necesitás retirarlo." }
+  ],
+  explanation: "El fondo de emergencia tiene que estar disponible ya. En Argentina, lo ideal es equilibrio: liquidez + cierta protección. No es para maximizar ganancias, es para evitar problemas."
+  },
+
+  {
+  id: 3,
+  title: "Inflación",
+  subtitle: "El enemigo número uno del ahorro",
+  tag: "Poder adquisitivo",
+  concept: "La inflación en Argentina es alta y constante, lo que hace que el dinero pierda valor rápidamente. Si tus ahorros no crecen al mismo ritmo, en realidad estás perdiendo poder de compra. No alcanza con guardar dinero: tenés que hacerlo crecer por encima de la inflación.",
+  example: {
+    title: "El golpe invisible",
+    body: "Tenés $1.000.000 guardados. La inflación anual es del 100%. Si no invertís, en un año ese dinero vale la mitad en términos reales. Aunque el número sea el mismo, podés comprar mucho menos."
+  },
+  question: "Si la inflación es del 100% anual y tu dinero crece un 60%, ¿qué está pasando realmente?",
+  options: [
+    { label: "Ganás 60%", explanation: "Eso es nominal. No estás considerando la inflación." },
+    { label: "Estás igual que antes", explanation: "No estás igual, estás perdiendo poder de compra." },
+    { label: "Estás perdiendo valor", explanation: "Correcto. Tu dinero crece menos que la inflación, así que vale menos en términos reales.", correct: true },
+    { label: "Ganás más porque invertiste", explanation: "Invertir no garantiza ganarle a la inflación. Depende del rendimiento real." }
+  ],
+  explanation: "Rentabilidad real = rendimiento - inflación. Si ganás 60% pero la inflación es 100%, en realidad estás perdiendo fuerte. En Argentina, este concepto no es opcional: es supervivencia financiera."
+  }
+];
+
+const state = {
+  currentModule: 0,
+  completedModules: new Set(),
+  correctAnswers: new Set(),
+  answeredModules: new Set()
+};
+
+function getProgress() {
+  const done = state.completedModules.size;
+  const total = MODULES.length;
+  const score = state.correctAnswers.size;
+  return { done, total, score, pct: Math.round((done / total) * 100) };
+}
+
+function updateProgressBars(prefix) {
+  const { done, total, score, pct } = getProgress();
+  const fill = document.getElementById(prefix + 'progress-fill');
+  const label = document.getElementById(prefix + 'progress-label');
+  const scoreEl = document.getElementById(prefix + 'progress-score');
+  if (fill) fill.style.width = pct + '%';
+  if (label) label.textContent = `${done} de ${total} completo`;
+  if (scoreEl) scoreEl.textContent = `Puntuación: ${score} / ${total}`;
+}
+
+function showScreen(id) {
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(s => {
+    s.classList.remove('active', 'visible');
+  });
+  const target = document.getElementById(id);
+  target.classList.add('active');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      target.classList.add('visible');
+    });
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showHub() {
+  renderModuleGrid();
+  updateProgressBars('');
+  showScreen('hub');
+}
+
+function renderModuleGrid() {
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = '';
+
+  MODULES.forEach((mod, i) => {
+    const isDone = state.completedModules.has(i);
+    const isLocked = i > 0 && !state.completedModules.has(i - 1);
+    const isActive = !isDone && !isLocked;
+
+    const card = document.createElement('div');
+    card.className = `module-card ${isDone ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${isActive && i === findFirstIncomplete() ? 'active-module pulse' : ''}`;
+    if (!isLocked) card.onclick = () => showLesson(i);
+
+    card.innerHTML = `
+      <div class="module-num">0${i + 1}</div>
+      <div class="module-info">
+        <div class="module-tag-pill">${mod.tag}</div>
+        <div class="module-title">${mod.title}</div>
+        <div class="module-subtitle">${mod.subtitle}</div>
+      </div>
+      <div class="module-status">
+        ${isLocked
+          ? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="6" width="8" height="7" rx="1" stroke="var(--muted2)" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 014 0V6" stroke="var(--muted2)" stroke-width="1.2" stroke-linecap="round"/></svg>`
+          : isDone
+          ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+          : `<div class="status-dot"></div>`
+        }
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function findFirstIncomplete() {
+  for (let i = 0; i < MODULES.length; i++) {
+    if (!state.completedModules.has(i)) return i;
+  }
+  return MODULES.length - 1;
+}
+
+function showLesson(idx) {
+  state.currentModule = idx;
+  const mod = MODULES[idx];
+
+  document.getElementById('lesson-breadcrumb').textContent = `Módulo ${idx + 1} de ${MODULES.length}`;
+  document.getElementById('lesson-tag').textContent = mod.tag;
+  document.getElementById('lesson-title').textContent = mod.title;
+  document.getElementById('lesson-subtitle').textContent = mod.subtitle;
+  document.getElementById('lesson-concept').textContent = mod.concept;
+  document.getElementById('lesson-example-title').textContent = mod.example.title;
+  document.getElementById('lesson-example-body').textContent = mod.example.body;
+
+  updateProgressBars('lesson-');
+  showScreen('lesson');
+}
+
+function showQuiz() {
+  const mod = MODULES[state.currentModule];
+
+  document.getElementById('quiz-step').textContent = `Módulo ${state.currentModule + 1} — Chequeo de conocimiento`;
+  document.getElementById('quiz-question').textContent = mod.question;
+
+  const optionsEl = document.getElementById('quiz-options');
+  optionsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  mod.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `
+      <div class="option-letter">${letters[i]}</div>
+      <div class="option-text">${opt.label}</div>
+    `;
+    btn.onclick = () => selectAnswer(i);
+    optionsEl.appendChild(btn);
+  });
+
+  updateProgressBars('quiz-');
+  showScreen('quiz');
+}
+
+function selectAnswer(selectedIdx) {
+  const mod = MODULES[state.currentModule];
+  const buttons = document.querySelectorAll('.option-btn');
+  const isCorrect = mod.options[selectedIdx].correct === true;
+
+  // Disable all
+  buttons.forEach(b => b.classList.add('disabled'));
+
+  // Mark selected
+  buttons[selectedIdx].classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+
+  // Reveal correct if wrong
+  if (!isCorrect) {
+    const correctIdx = mod.options.findIndex(o => o.correct);
+    buttons[correctIdx].classList.add('reveal-correct');
+  }
+
+  // Update state
+  state.completedModules.add(state.currentModule);
+  state.answeredModules.add(state.currentModule);
+  if (isCorrect) state.correctAnswers.add(state.currentModule);
+
+  setTimeout(() => showFeedback(selectedIdx, isCorrect), 520);
+}
+
+function showFeedback(selectedIdx, isCorrect) {
+  const mod = MODULES[state.currentModule];
+  const selected = mod.options[selectedIdx];
+
+  const resultEl = document.getElementById('feedback-result');
+  resultEl.className = `feedback-result ${isCorrect ? 'correct' : 'wrong'}`;
+
+  document.getElementById('feedback-icon').innerHTML = isCorrect
+    ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 5l6 6M11 5l-6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+  document.getElementById('feedback-result-label').textContent = isCorrect ? 'Respuesta correcta' : 'Respuesta incorrecta';
+  document.getElementById('feedback-result-title').textContent = isCorrect
+    ? 'Bien pensado.'
+    : `La respuesta correcta era "${mod.options.find(o => o.correct)?.label}"`;
+
+  document.getElementById('recap-answer').textContent = selected.label;
+  document.getElementById('explanation-text').textContent = mod.explanation;
+
+  const nextBtn = document.getElementById('btn-next');
+  const isLast = state.currentModule === MODULES.length - 1;
+  nextBtn.innerHTML = isLast
+    ? `Ver resultados <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6h6M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `Siguiente módulo <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6h6M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  updateProgressBars('feedback-');
+  showScreen('feedback');
+}
+
+function nextModule() {
+  const next = state.currentModule + 1;
+  if (next >= MODULES.length) {
+    showComplete();
+  } else {
+    showLesson(next);
+  }
+}
+
+function showComplete() {
+  const { score, total } = getProgress();
+  const pct = Math.round((score / total) * 100);
+
+  let grade, sub;
+ if (score === 5) {
+  grade = 'A+';
+  sub = "Perfecto. Entendés cómo funciona el dinero en un contexto difícil como Argentina. Ahora viene lo importante: aplicar. Si invertís y mantenés disciplina, el tiempo juega a tu favor.";
+}
+else if (score >= 4) {
+  grade = 'A';
+  sub = "Perfecto. Entendés cómo funciona el dinero en un contexto difícil como Argentina. Ahora viene lo importante: aplicar. Si invertís y mantenés disciplina, el tiempo juega a tu favor.";
+}
+else if (score >= 3) {
+  grade = 'B';
+  sub = "Vas bien, pero todavía estás en modo teórico. Si no corregís esos conceptos, vas a tomar decisiones promedio y obtener resultados promedio.";
+}
+else if (score >= 2) {
+  grade = 'C';
+  sub = "Tenés intención, pero te falta estructura. Sin un sistema claro, la plata se te va a escapar. Volvé a las lecciones clave y aplicá aunque sea una cosa hoy.";
+}
+else {
+  grade = 'D';
+  sub = "Estás jugando sin entender las reglas. En Argentina eso se paga caro con inflación y malas decisiones. Empezá de nuevo, pero esta vez prestando atención a lo básico.";
+}
+  document.getElementById('final-score').textContent = `${score}/4`;
+  document.getElementById('final-pct').textContent = `${pct}%`;
+  document.getElementById('final-grade').textContent = grade;
+  document.getElementById('complete-sub').textContent = sub;
+
+  showScreen('complete');
+}
+
+
+
+// ... (todas tus funciones anteriores: showHub, showLesson, selectAnswer, etc.)
+
+function restart() {
+  state.completedModules.clear();
+  state.correctAnswers.clear();
+  state.answeredModules.clear();
+  state.currentModule = 0;
+  showHub();
+}
+
+async function enviarDatosAExcel(estrellas) {
+  const urlScript = "https://script.google.com/macros/s/AKfycbz9zTa1gYqlcLc3pKGsF-xXu-mphTKS0NtOcBLkSfb5WTghdMZ4G_SBxBieXmMuKshp/exec"; // Pegá la URL del Paso 1
+  
+  const score = state.correctAnswers.size;
+  const pct = Math.round((score / MODULES.length) * 100);
+  let grade = document.getElementById('final-grade').textContent;
+
+  const datos = {
+    score: score,
+    pct: pct,
+    grade: grade,
+    stars: estrellas
+  };
+
+  try {
+    // Usamos fetch para enviar los datos "por detrás" sin recargar la página
+    await fetch(urlScript, {
+      method: 'POST',
+      mode: 'no-cors', // Importante para evitar bloqueos de seguridad
+      cache: 'no-cache',
+      body: JSON.stringify(datos)
+    });
+    console.log("Datos enviados al sistema de control.");
+  } catch (error) {
+    console.error("Error al conectar con Excel:", error);
+  }
+}
+
+// NUEVA FUNCIÓN: SISTEMA DE RESEÑAS
+function setRating(n) {
+  const stars = document.querySelectorAll('#star-rating span');
+  const thanks = document.getElementById('review-thanks');
+  
+  stars.forEach((star, i) => {
+    if (i < n) {
+      star.textContent = '★';
+      star.style.color = 'var(--gold)';
+    } else {
+      star.textContent = '☆';
+      star.style.color = 'var(--muted)';
+    }
+  });
+
+  thanks.style.display = 'block';
+  console.log("Calificación recibida: " + n + " estrellas");
+   enviarDatosAExcel(n);
+}
+
+// NUEVAS FUNCIONES: PERSISTENCIA (OPCIONAL)
+function guardarProgreso() {
+    const datos = {
+        completados: Array.from(state.completedModules),
+        puntos: Array.from(state.correctAnswers)
+    };
+    localStorage.setItem('progreso_maxipollas', JSON.stringify(datos));
+}
+
+function cargarProgreso() {
+    const guardado = localStorage.getItem('progreso_maxipollas');
+    if (guardado) {
+        const datos = JSON.parse(guardado);
+        state.completedModules = new Set(datos.completados);
+        state.correctAnswers = new Set(datos.puntos);
+    }
+}
+
+// --- INICIALIZACIÓN ---
+cargarProgreso(); // Cargamos si hay algo guardado
+showScreen('splash');
+</script>
+</body>
+</html>
